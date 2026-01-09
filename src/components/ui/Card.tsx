@@ -8,6 +8,7 @@ interface CardProps {
   footer?: React.ReactNode;
   className?: string;
   padding?: 'none' | 'sm' | 'md' | 'lg';
+  onClick?: () => void;
 }
 
 export const Card: React.FC<CardProps> = ({
@@ -17,9 +18,13 @@ export const Card: React.FC<CardProps> = ({
   footer,
   className,
   padding = 'md',
+  onClick,
 }) => {
   return (
-    <div className={cn('bg-white rounded-lg border border-gray-200 shadow-sm', className)}>
+    <div
+      className={cn('bg-white rounded-lg border border-gray-200 shadow-sm', className)}
+      onClick={onClick}
+    >
       {(title || subtitle) && (
         <div className="px-6 py-4 border-b border-gray-200">
           {title && <h3 className="text-lg font-semibold text-gray-900">{title}</h3>}
