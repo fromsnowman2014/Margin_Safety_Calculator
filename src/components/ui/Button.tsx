@@ -12,6 +12,7 @@ interface ButtonProps {
   icon?: React.ReactNode;
   fullWidth?: boolean;
   type?: 'button' | 'submit' | 'reset';
+  className?: string;
 }
 
 export const Button: React.FC<ButtonProps> = ({
@@ -24,6 +25,7 @@ export const Button: React.FC<ButtonProps> = ({
   icon,
   fullWidth = false,
   type = 'button',
+  className,
 }) => {
   return (
     <button
@@ -48,7 +50,8 @@ export const Button: React.FC<ButtonProps> = ({
           'px-4 py-2 text-base rounded-md': size === 'md',
           'px-6 py-3 text-lg rounded-lg': size === 'lg',
         },
-        { 'w-full': fullWidth }
+        { 'w-full': fullWidth },
+        className
       )}
     >
       {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
