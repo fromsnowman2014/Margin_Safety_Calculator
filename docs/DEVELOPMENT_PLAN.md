@@ -50,6 +50,35 @@
 
 #### Day 1-2: 프로젝트 셋업 및 구조 설계
 
+## ⚠️ CONFIGURATION CHECKPOINT #1
+
+**🛑 STOP HERE - 개발 시작 전 필수 설정**
+
+다음 설정을 완료한 후에 코드를 작성하세요:
+
+1. **GitHub Repository 설정** - [CONFIGURATION_GUIDE.md](./CONFIGURATION_GUIDE.md#day-1-github-repository-설정) 참조
+2. **Vercel 계정 및 프로젝트 생성** - [CONFIGURATION_GUIDE.md](./CONFIGURATION_GUIDE.md#day-1-vercel-계정-및-프로젝트-설정) 참조
+3. **.env.local 파일 생성** - [CONFIGURATION_GUIDE.md](./CONFIGURATION_GUIDE.md#day-1-로컬-환경-변수-설정) 참조
+
+**예상 소요 시간**: 25분
+
+**검증 방법**:
+```bash
+# Git remote 확인
+git remote -v
+
+# Vercel 프로젝트 확인
+vercel ls
+
+# 환경 변수 파일 확인
+cat .env.local.example
+ls .env.local
+```
+
+✅ **설정 완료 후 아래 작업 진행**
+
+---
+
 **작업 목록**:
 
 1. **프로젝트 초기화** (1시간)
@@ -203,6 +232,26 @@
 
 #### Day 7: Claude API 연동
 
+## ⚠️ CONFIGURATION CHECKPOINT #2
+
+**🛑 STOP HERE - Claude API 통합 전 필수 설정**
+
+**Anthropic API 키 발급 및 설정**:
+- [CONFIGURATION_GUIDE.md](./CONFIGURATION_GUIDE.md#day-7-anthropic-api-키-설정) 참조
+- **예상 소요 시간**: 10분
+
+**검증 방법**:
+```bash
+node -e "console.log('API Key:', process.env.ANTHROPIC_API_KEY?.slice(0, 15) + '...')"
+# 출력: API Key: sk-ant-api03-...
+```
+
+**⚠️ 주의**: API 키 없이 개발하려면 mock data 사용 (MOCK_DATA_REGISTRY.md 참조)
+
+✅ **설정 완료 후 아래 작업 진행**
+
+---
+
 **작업 목록**:
 
 1. **Claude Client 구현** (2시간)
@@ -273,6 +322,28 @@
 
 #### Day 10: API 통합 완료
 
+## ⚠️ CONFIGURATION CHECKPOINT #3
+
+**🛑 STOP HERE - 자동 데이터 수집 전 필수 설정**
+
+**Financial Modeling Prep API 키 발급 및 설정**:
+- [CONFIGURATION_GUIDE.md](./CONFIGURATION_GUIDE.md#day-10-financial-modeling-prep-api-설정) 참조
+- **예상 소요 시간**: 15분
+
+**검증 방법**:
+```bash
+curl "https://financialmodelingprep.com/api/v3/quote/AAPL?apikey=${FMP_API_KEY}"
+# 성공 시: JSON 데이터 반환
+```
+
+**Mock Data 제거 (API 키 설정 완료 후)**:
+- [MOCK_DATA_REGISTRY.md](./MOCK_DATA_REGISTRY.md#12-financial-data-mocks) 참조
+- `src/lib/data/__mocks__/fmp.ts` 제거
+
+✅ **설정 완료 후 아래 작업 진행**
+
+---
+
 **작업 목록**:
 
 1. **Financial Modeling Prep API 연동** (2시간)
@@ -301,6 +372,26 @@
 ---
 
 #### Day 11: 캐싱 및 Rate Limiting
+
+## ⚠️ CONFIGURATION CHECKPOINT #4
+
+**🛑 STOP HERE - 캐싱 구현 전 필수 설정**
+
+**Vercel KV 및 Upstash Rate Limit 설정**:
+- [CONFIGURATION_GUIDE.md](./CONFIGURATION_GUIDE.md#day-11-vercel-kv-및-rate-limiting-설정) 참조
+- **예상 소요 시간**: 20분
+
+**검증 방법**:
+```typescript
+// 테스트 코드 실행
+import { kv } from '@vercel/kv';
+await kv.set('test', 'hello');
+console.log(await kv.get('test')); // 'hello'
+```
+
+✅ **설정 완료 후 아래 작업 진행**
+
+---
 
 **작업 목록**:
 
@@ -368,6 +459,36 @@
 ---
 
 #### Day 13-14: Vercel 배포 및 문서화
+
+## ⚠️ CONFIGURATION CHECKPOINT #5
+
+**🛑 STOP HERE - Production 배포 전 필수 작업**
+
+**Mock Data 제거**:
+- [MOCK_DATA_REGISTRY.md](./MOCK_DATA_REGISTRY.md#-mock-data-제거-체크리스트) 참조
+- **예상 소요 시간**: 30분
+
+**제거 대상**:
+1. `src/lib/ai/__mocks__/` - Claude API mocks
+2. `src/lib/data/__mocks__/` - FMP API mocks
+3. `src/lib/data/examples.ts` - Example data
+
+**검증 스크립트 실행**:
+```bash
+./scripts/detect-mocks.sh
+# 출력: "✅ Detection complete. Review warnings above."
+# ❌가 없어야 함!
+```
+
+**최종 환경 변수 확인**:
+```bash
+vercel env ls
+# 모든 API 키가 설정되어 있는지 확인
+```
+
+✅ **Mock data 제거 완료 후 아래 작업 진행**
+
+---
 
 **작업 목록**:
 
@@ -441,6 +562,33 @@
 ### 3.2 Week 3: 인증 및 데이터베이스
 
 #### Day 15-16: Supabase 셋업
+
+## ⚠️ CONFIGURATION CHECKPOINT #6 (Phase 2 Start)
+
+**🛑 STOP HERE - Phase 2 시작 전 필수 설정**
+
+**Supabase 프로젝트 생성 및 설정**:
+- [CONFIGURATION_GUIDE.md](./CONFIGURATION_GUIDE.md#day-15-supabase-프로젝트-설정) 참조
+- **예상 소요 시간**: 30분
+
+**설정 항목**:
+1. Supabase 프로젝트 생성
+2. API 키 복사 및 환경 변수 설정
+3. Supabase CLI 설치 및 연결
+4. Auth Provider 설정
+
+**검증 방법**:
+```bash
+# CLI 연결 확인
+supabase status
+
+# 환경 변수 확인
+echo $NEXT_PUBLIC_SUPABASE_URL
+```
+
+✅ **설정 완료 후 아래 작업 진행**
+
+---
 
 **작업 목록**:
 
@@ -745,6 +893,50 @@
 ---
 
 #### Day 40-42: 문서화 및 출시
+
+## ⚠️ CONFIGURATION CHECKPOINT #7 (Phase 2 Complete)
+
+**🛑 STOP HERE - Phase 2 Production 배포 전 필수 작업**
+
+**Mock Data 및 Seed Data 제거**:
+- [MOCK_DATA_REGISTRY.md](./MOCK_DATA_REGISTRY.md#phase-2-배포-전-day-42) 참조
+- **예상 소요 시간**: 45분
+
+**제거 대상**:
+1. `src/lib/supabase/__mocks__/` - Supabase mocks
+2. Production DB의 seed data (테스트 사용자 및 포트폴리오)
+3. `supabase/seed.sql`에 ARCHIVED 주석 추가
+
+**Seed Data 정리**:
+```bash
+# Production DB 접속 후 테스트 데이터 삭제
+# Supabase Dashboard → SQL Editor에서 실행
+DELETE FROM calculations WHERE holding_id IN (
+  SELECT id FROM holdings WHERE portfolio_id IN (
+    SELECT id FROM portfolios WHERE user_id = '00000000-0000-0000-0000-000000000001'
+  )
+);
+DELETE FROM holdings WHERE portfolio_id IN (
+  SELECT id FROM portfolios WHERE user_id = '00000000-0000-0000-0000-000000000001'
+);
+DELETE FROM portfolios WHERE user_id = '00000000-0000-0000-0000-000000000001';
+```
+
+**검증 스크립트 실행**:
+```bash
+./scripts/detect-mocks.sh
+# 출력: "✅ Detection complete. Review warnings above."
+```
+
+**최종 DB 확인**:
+```bash
+# Supabase Dashboard → Table Editor
+# 실제 사용자 데이터만 존재하는지 확인
+```
+
+✅ **Mock data 제거 완료 후 아래 작업 진행**
+
+---
 
 **작업 목록**:
 

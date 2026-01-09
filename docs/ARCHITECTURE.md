@@ -391,31 +391,72 @@ module.exports = {
 
 ### 6.1 환경 변수 관리
 
+## ⚠️ 중요: 환경 변수 설정 필수
+
+**모든 환경 변수 설정은 [CONFIGURATION_GUIDE.md](./CONFIGURATION_GUIDE.md)를 참조하세요.**
+
+각 개발 단계마다 필요한 환경 변수가 다릅니다:
+
+| 환경 변수 | 필요 시점 | 설정 가이드 |
+|---------|----------|------------|
+| `ANTHROPIC_API_KEY` | Day 7 | [링크](./CONFIGURATION_GUIDE.md#day-7-anthropic-api-키-설정) |
+| `FMP_API_KEY` | Day 10 | [링크](./CONFIGURATION_GUIDE.md#day-10-financial-modeling-prep-api-설정) |
+| `KV_REST_API_URL/TOKEN` | Day 11 | [링크](./CONFIGURATION_GUIDE.md#day-11-vercel-kv-및-rate-limiting-설정) |
+| `NEXT_PUBLIC_SUPABASE_*` | Day 15 (Phase 2) | [링크](./CONFIGURATION_GUIDE.md#day-15-supabase-프로젝트-설정) |
+
+**템플릿 파일**: `.env.local.example`
+
 ```bash
-# .env.local.example
+# ==============================================
+# IMPORTANT: Copy this file to .env.local
+# and fill in the actual values
+# ==============================================
 
-# API Keys (NEVER commit actual values)
-ANTHROPIC_API_KEY=sk-ant-xxx
-FMP_API_KEY=xxx
-FRED_API_KEY=xxx
+# App Configuration
+NODE_ENV=development
+NEXT_PUBLIC_APP_URL=http://localhost:3000
 
-# Supabase (Phase 2)
-NEXT_PUBLIC_SUPABASE_URL=https://xxx.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=xxx
-SUPABASE_SERVICE_ROLE_KEY=xxx
+# ==============================================
+# ⚠️ ADD THESE ON DAY 7 (Claude API)
+# ==============================================
+# Anthropic API (Claude 3.5 Sonnet)
+# Get your key: https://console.anthropic.com/account/keys
+ANTHROPIC_API_KEY=
 
-# Vercel KV
-KV_REST_API_URL=xxx
-KV_REST_API_TOKEN=xxx
+# ==============================================
+# ⚠️ ADD THESE ON DAY 10 (Financial Data)
+# ==============================================
+# Financial Modeling Prep API
+# Get your key: https://site.financialmodelingprep.com/developer/docs/
+FMP_API_KEY=
 
-# App Config
-NEXT_PUBLIC_APP_URL=https://safetynet-invest.app
-NODE_ENV=production
+# ==============================================
+# ⚠️ ADD THESE ON DAY 11 (Caching & Rate Limiting)
+# ==============================================
+# Vercel KV (Redis) - Auto-populated by Vercel
+KV_REST_API_URL=
+KV_REST_API_TOKEN=
+
+# ==============================================
+# ⚠️ ADD THESE ON DAY 15 - PHASE 2 (Database)
+# ==============================================
+# Supabase
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
 ```
 
-**Vercel 배포 시**:
-- Vercel Dashboard → Project Settings → Environment Variables에 등록
-- Preview/Production 환경 분리
+**실제 파일**: `.env.local` (⚠️ Git에서 제외됨 - .gitignore에 추가 필수)
+
+**Vercel 배포 시 환경 변수 등록 방법**:
+1. Vercel Dashboard → Project → Settings → Environment Variables
+2. 각 변수를 Production, Preview, Development에 맞게 설정
+3. 자동 배포 후 환경 변수 적용 확인
+
+**보안 주의사항**:
+- ❌ **절대** `.env.local` 파일을 Git에 커밋하지 마세요
+- ❌ `NEXT_PUBLIC_*` 접두사가 없는 변수는 클라이언트에 노출되지 않습니다
+- ✅ `SUPABASE_SERVICE_ROLE_KEY`는 Production 환경에만 설정 (Preview에 노출 금지)
 
 ### 6.2 API 보안
 
