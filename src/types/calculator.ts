@@ -6,7 +6,8 @@ export type RecommendationType = 'undervalued' | 'fairly_valued' | 'overvalued';
 
 export interface ScenarioAssumptions {
   growthRate: number;
-  rationale: string;
+  eps: number;
+  peRatio: number;
 }
 
 export interface Scenario {
