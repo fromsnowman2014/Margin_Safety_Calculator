@@ -7,7 +7,8 @@ import { ManualInputForm, type ManualInputData } from './ManualInputForm';
 import { useCalculatorStore } from '@/store/calculatorStore';
 
 export const CalculatorContainer: React.FC = () => {
-  const { mode, setMode, loading, error, setError } = useCalculatorStore();
+  const { mode, setMode, loading, error, setError, setLoading, setAnalysis } =
+    useCalculatorStore();
 
   // Ticker input state
   const [ticker, setTicker] = useState('');
@@ -36,9 +37,36 @@ export const CalculatorContainer: React.FC = () => {
       return;
     }
 
-    // TODO: Day 7 - Implement API call to /api/analyze
-    console.log('Analyzing ticker:', ticker);
-    setError('API integration not yet implemented (Day 7)');
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch('/api/analyze', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ticker: ticker.toUpperCase(),
+          mode: 'auto',
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(
+          errorData.error?.message || 'Failed to analyze stock'
+        );
+      }
+
+      const data = await response.json();
+      setAnalysis(data);
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : 'An unexpected error occurred';
+      setError(errorMessage);
+      console.error('Analysis error:', err);
+    }
   };
 
   const handleManualSubmit = async () => {
@@ -62,9 +90,41 @@ export const CalculatorContainer: React.FC = () => {
       return;
     }
 
-    // TODO: Day 7 - Implement API call with manual data
-    console.log('Analyzing manual data:', manualData);
-    setError('API integration not yet implemented (Day 7)');
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch('/api/analyze', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ticker: ticker || 'MANUAL',
+          mode: 'manual',
+          data: {
+            currentPrice: parseFloat(manualData.currentPrice),
+            eps: parseFloat(manualData.eps),
+            historicalGrowth: parseFloat(manualData.historicalGrowth),
+          },
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(
+          errorData.error?.message || 'Failed to analyze stock'
+        );
+      }
+
+      const data = await response.json();
+      setAnalysis(data);
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : 'An unexpected error occurred';
+      setError(errorMessage);
+      console.error('Analysis error:', err);
+    }
   };
 
   return (
