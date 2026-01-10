@@ -47,6 +47,7 @@ export async function POST(request: NextRequest) {
         // Use Gemini to fetch stock data
         const dataPrompt = createDataCollectionPrompt(ticker);
         console.log('[API] Calling Gemini API for data collection...');
+        console.log('[API] Prompt length:', dataPrompt.length, 'characters');
 
         const geminiResponse = await gemini.sendMessage({
           system: SYSTEM_PROMPT,
@@ -55,7 +56,11 @@ export async function POST(request: NextRequest) {
           maxTokens: 2048,
         });
 
-        console.log('[API] Gemini API response received, parsing data...');
+        console.log('[API] Gemini API response received!');
+        console.log('[API] Response length:', geminiResponse.length, 'characters');
+        console.log('[API] Response preview:', geminiResponse.substring(0, 200) + '...');
+        console.log('[API] Full response:', geminiResponse);
+        console.log('[API] Attempting to parse JSON...');
 
         // Parse the JSON response
         const fetchedData = gemini.parseJSON<{
@@ -69,8 +74,15 @@ export async function POST(request: NextRequest) {
           sources: string[];
         }>(geminiResponse);
 
+        console.log('[API] JSON parsing successful!');
+        console.log('[API] Parsed data:', JSON.stringify(fetchedData, null, 2));
+
         // Validate fetched data
         if (!fetchedData.companyName || !fetchedData.currentPrice || !fetchedData.eps) {
+          console.error('[API] Validation failed - missing required fields');
+          console.error('[API] companyName:', fetchedData.companyName);
+          console.error('[API] currentPrice:', fetchedData.currentPrice);
+          console.error('[API] eps:', fetchedData.eps);
           throw new DataParsingError('Incomplete data received from Gemini');
         }
 
@@ -82,6 +94,8 @@ export async function POST(request: NextRequest) {
           historicalGrowth: fetchedData.historicalGrowth || 0,
           analystConsensus: fetchedData.analystConsensus,
         };
+
+        console.log('[API] Stock data prepared successfully:', JSON.stringify(stockData, null, 2));
       } catch (error) {
         console.error('[API] Failed to fetch stock data:', error);
         console.error('[API] Error stack:', error instanceof Error ? error.stack : 'No stack trace');

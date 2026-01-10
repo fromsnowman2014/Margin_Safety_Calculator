@@ -44,7 +44,10 @@ export class GeminiClient {
    */
   async sendMessage(request: AIRequest): Promise<string> {
     try {
+      console.log('[Gemini] Initializing Gemini client...');
       const genAI = getGeminiClient();
+
+      console.log('[Gemini] Creating model instance:', this.model);
       const model = genAI.getGenerativeModel({
         model: this.model,
         systemInstruction: request.system,
@@ -55,13 +58,19 @@ export class GeminiClient {
         maxOutputTokens: request.maxTokens || this.defaultMaxTokens,
       };
 
+      console.log('[Gemini] Generating content with config:', generationConfig);
+      console.log('[Gemini] User message preview:', request.userMessage.substring(0, 100) + '...');
+
       const result = await model.generateContent({
         contents: [{ role: 'user', parts: [{ text: request.userMessage }] }],
         generationConfig,
       });
 
+      console.log('[Gemini] Content generated successfully');
       const response = result.response;
       const text = response.text();
+
+      console.log('[Gemini] Response text extracted, length:', text?.length || 0);
 
       if (!text) {
         throw new Error('No text content in Gemini response');
@@ -69,7 +78,9 @@ export class GeminiClient {
 
       return text;
     } catch (error) {
-      console.error('Gemini API error:', error);
+      console.error('[Gemini] API error occurred:', error);
+      console.error('[Gemini] Error type:', error?.constructor?.name);
+      console.error('[Gemini] Error details:', error);
 
       // Extract error message
       let errorMessage = 'Unknown Gemini API error';
