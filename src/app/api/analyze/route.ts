@@ -7,7 +7,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { AnalyzeRequestSchema } from '@/lib/data/validators';
-import { claude } from '@/lib/ai/claude';
+import { gemini } from '@/lib/ai/gemini';
 import {
   SYSTEM_PROMPT,
   createDataCollectionPrompt,
@@ -16,7 +16,7 @@ import {
   FALLBACK_DATA_PROMPT,
 } from '@/lib/ai/prompts';
 import { generateScenarios } from '@/lib/graham/scenarios';
-import { ClaudeAPIError, DataParsingError } from '@/lib/ai/errors';
+import { DataParsingError } from '@/lib/ai/errors';
 import type { CalculationResult } from '@/types/calculator';
 
 /**
@@ -44,26 +44,21 @@ export async function POST(request: NextRequest) {
       try {
         console.log(`[API] Starting auto mode analysis for ticker: ${ticker}`);
 
-        // Use Claude to fetch stock data
+        // Use Gemini to fetch stock data
         const dataPrompt = createDataCollectionPrompt(ticker);
-        console.log('[API] Calling Claude API for data collection...');
+        console.log('[API] Calling Gemini API for data collection...');
 
-        const claudeResponse = await claude.sendMessage({
+        const geminiResponse = await gemini.sendMessage({
           system: SYSTEM_PROMPT,
-          messages: [
-            {
-              role: 'user',
-              content: dataPrompt,
-            },
-          ],
+          userMessage: dataPrompt,
           temperature: 0.3,
           maxTokens: 2048,
         });
 
-        console.log('[API] Claude API response received, parsing data...');
+        console.log('[API] Gemini API response received, parsing data...');
 
         // Parse the JSON response
-        const fetchedData = claude.parseJSON<{
+        const fetchedData = gemini.parseJSON<{
           ticker: string;
           companyName: string;
           currentPrice: number;
@@ -72,11 +67,11 @@ export async function POST(request: NextRequest) {
           analystConsensus: number | null;
           dataDate: string;
           sources: string[];
-        }>(claudeResponse);
+        }>(geminiResponse);
 
         // Validate fetched data
         if (!fetchedData.companyName || !fetchedData.currentPrice || !fetchedData.eps) {
-          throw new DataParsingError('Incomplete data received from Claude');
+          throw new DataParsingError('Incomplete data received from Gemini');
         }
 
         stockData = {
@@ -93,14 +88,14 @@ export async function POST(request: NextRequest) {
 
         // Check if it's an API key issue
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-        const isApiKeyError = errorMessage.includes('ANTHROPIC_API_KEY');
+        const isApiKeyError = errorMessage.includes('GOOGLE_API_KEY');
 
         return NextResponse.json(
           {
             error: {
               code: isApiKeyError ? 'API_KEY_MISSING' : 'DATA_FETCH_FAILED',
               message: isApiKeyError
-                ? 'API key not configured. Please contact the administrator.'
+                ? 'Google API key not configured. Please contact the administrator.'
                 : 'Failed to fetch stock data. Please try manual mode or verify the ticker symbol.',
               details: errorMessage,
             },
@@ -166,19 +161,14 @@ export async function POST(request: NextRequest) {
           })),
         });
 
-        const insightsResponse = await claude.sendMessage({
+        const insightsResponse = await gemini.sendMessage({
           system: SYSTEM_PROMPT,
-          messages: [
-            {
-              role: 'user',
-              content: insightsPrompt,
-            },
-          ],
+          userMessage: insightsPrompt,
           temperature: 0.5,
           maxTokens: 2048,
         });
 
-        insights = claude.parseJSON(insightsResponse);
+        insights = gemini.parseJSON(insightsResponse);
       } catch (error) {
         console.error('Failed to generate insights:', error);
         // Continue without insights - not critical
@@ -217,20 +207,6 @@ export async function POST(request: NextRequest) {
           },
         },
         { status: 400 }
-      );
-    }
-
-    // Handle Claude API errors
-    if (error instanceof ClaudeAPIError) {
-      return NextResponse.json(
-        {
-          error: {
-            code: 'AI_SERVICE_ERROR',
-            message: 'Failed to process request with AI service',
-            details: error.message,
-          },
-        },
-        { status: error.statusCode || 500 }
       );
     }
 
