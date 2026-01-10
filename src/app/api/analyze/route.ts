@@ -42,8 +42,12 @@ export async function POST(request: NextRequest) {
     // Step 1: Get stock data (auto or manual)
     if (mode === 'auto') {
       try {
+        console.log(`[API] Starting auto mode analysis for ticker: ${ticker}`);
+
         // Use Claude to fetch stock data
         const dataPrompt = createDataCollectionPrompt(ticker);
+        console.log('[API] Calling Claude API for data collection...');
+
         const claudeResponse = await claude.sendMessage({
           system: SYSTEM_PROMPT,
           messages: [
@@ -55,6 +59,8 @@ export async function POST(request: NextRequest) {
           temperature: 0.3,
           maxTokens: 2048,
         });
+
+        console.log('[API] Claude API response received, parsing data...');
 
         // Parse the JSON response
         const fetchedData = claude.parseJSON<{
@@ -82,18 +88,24 @@ export async function POST(request: NextRequest) {
           analystConsensus: fetchedData.analystConsensus,
         };
       } catch (error) {
-        console.error('Failed to fetch stock data:', error);
+        console.error('[API] Failed to fetch stock data:', error);
+        console.error('[API] Error stack:', error instanceof Error ? error.stack : 'No stack trace');
+
+        // Check if it's an API key issue
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        const isApiKeyError = errorMessage.includes('ANTHROPIC_API_KEY');
 
         return NextResponse.json(
           {
             error: {
-              code: 'DATA_FETCH_FAILED',
-              message:
-                'Failed to fetch stock data. Please try manual mode or verify the ticker symbol.',
-              details: error instanceof Error ? error.message : 'Unknown error',
+              code: isApiKeyError ? 'API_KEY_MISSING' : 'DATA_FETCH_FAILED',
+              message: isApiKeyError
+                ? 'API key not configured. Please contact the administrator.'
+                : 'Failed to fetch stock data. Please try manual mode or verify the ticker symbol.',
+              details: errorMessage,
             },
           },
-          { status: 500 }
+          { status: isApiKeyError ? 503 : 500 }
         );
       }
     } else {
