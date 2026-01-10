@@ -8,16 +8,23 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { ClaudeAPIError } from './errors';
 
-// Validate API key is present
-if (!process.env.ANTHROPIC_API_KEY) {
-  throw new Error(
-    'ANTHROPIC_API_KEY environment variable is required. Please add it to your .env.local file.'
-  );
-}
+/**
+ * Get Anthropic client instance with runtime API key validation
+ * This prevents build-time errors in environments where env vars aren't available during build
+ */
+function getAnthropicClient(): Anthropic {
+  const apiKey = process.env.ANTHROPIC_API_KEY;
 
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-});
+  if (!apiKey) {
+    throw new Error(
+      'ANTHROPIC_API_KEY environment variable is required. Please add it to your .env.local file or Vercel environment variables.'
+    );
+  }
+
+  return new Anthropic({
+    apiKey: apiKey,
+  });
+}
 
 export interface ClaudeRequest {
   system: string;
@@ -47,6 +54,7 @@ export class ClaudeClient {
    */
   async sendMessage(request: ClaudeRequest): Promise<string> {
     try {
+      const anthropic = getAnthropicClient();
       const response = await anthropic.messages.create({
         model: this.model,
         system: request.system,
@@ -79,6 +87,7 @@ export class ClaudeClient {
     request: ClaudeRequest
   ): Promise<ClaudeToolUseResponse> {
     try {
+      const anthropic = getAnthropicClient();
       const response = await anthropic.messages.create({
         model: this.model,
         system: request.system,
